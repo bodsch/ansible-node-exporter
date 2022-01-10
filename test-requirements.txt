@@ -1,0 +1,11 @@
+ansible-lint
+molecule
+molecule-docker
+docker
+yamllint
+flake8
+pytest
+pytest-testinfra
+tox
+tox-gh-actions
+netaddr==0.8.0

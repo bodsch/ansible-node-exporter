@@ -1,0 +1,57 @@
+---
+
+- name: download node_exporter binary to local folder
+  become: false
+  delegate_to: 127.0.0.1
+  get_url:
+    url: "{{ node_exporter_release_download_url }}/download/v{{ node_exporter_version }}/node_exporter-{{ node_exporter_version }}.linux-amd64.tar.gz"
+    dest: "{{ node_exporter_local_tmp_directory }}/node_exporter-linux-amd64.tar.gz"
+  register: _download_archive
+  until: _download_archive is succeeded
+  retries: 5
+  delay: 2
+  check_mode: false
+
+- name: extract node_exporter archive
+  become: false
+  delegate_to: 127.0.0.1
+  unarchive:
+    src: "{{ node_exporter_local_tmp_directory }}/node_exporter-linux-amd64.tar.gz"
+    dest: "{{ node_exporter_local_tmp_directory }}/"
+    copy: false
+
+- name: detect binary file for node_exporter
+  become: false
+  delegate_to: 127.0.0.1
+  stat:
+    path: "{{ node_exporter_local_tmp_directory }}/node_exporter-{{ node_exporter_version }}.linux-amd64//node_exporter"
+  register: stat_file_binary
+
+- block:
+    - name: propagate node_exporter binaries
+      copy:
+        src: "{{ node_exporter_local_tmp_directory }}/node_exporter-{{ node_exporter_version }}.linux-amd64//node_exporter"
+        dest: "{{ node_exporter_install_path }}/node_exporter"
+        mode: 0755
+        owner: "{{ node_exporter_system_user }}"
+        group: "{{ node_exporter_system_group }}"
+
+    - name: make files executable
+      file:
+        path: "{{ node_exporter_install_path }}/node_exporter"
+        mode: 0755
+        owner: "{{ node_exporter_system_user }}"
+        group: "{{ node_exporter_system_group }}"
+  when:
+    - stat_file_binary.stat.exists
+
+- name: create link to binary
+  file:
+    src: "{{ node_exporter_install_path }}/node_exporter"
+    dest: /usr/bin/node_exporter
+    state: link
+    force: true
+  notify:
+    - restart node_exporter
+
+...

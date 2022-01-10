@@ -1,0 +1,22 @@
+---
+
+- name: create node_exporter data directory
+  file:
+    path: "{{ node_exporter_textfile_dir }}"
+    state: directory
+    owner: "{{ node_exporter_system_user }}"
+    group: "{{ node_exporter_system_group }}"
+    mode: 0755
+
+- name: create systemd service unit
+  template:
+    src: "init/systemd/node_exporter.service.j2"
+    dest: "{{ systemd_lib_directory }}/node_exporter.service"
+    owner: root
+    group: root
+    mode: 0644
+  notify:
+    - daemon-reload
+    - restart node_exporter
+
+...

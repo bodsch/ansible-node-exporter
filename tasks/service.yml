@@ -1,0 +1,13 @@
+---
+
+- name: restart node_exporter if needed
+  meta: flush_handlers
+
+- name: ensure node_exporter is enabled on boot
+  become: true
+  service:
+    name: node_exporter
+    enabled: true
+    state: started
+
+...

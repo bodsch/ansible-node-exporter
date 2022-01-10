@@ -1,0 +1,105 @@
+---
+
+- name: include OS specific configuration ({{ ansible_distribution }} ({{ ansible_os_family }}) {{ ansible_distribution_major_version }})
+  include_vars: "{{ lookup('first_found', params) }}"
+  vars:
+    params:
+      paths:
+        - "vars"
+      files:
+        # eg. debian-10 / ubuntu-20.04 / centos-8 / oraclelinux-8
+        - "{{ ansible_distribution | lower }}-{{ ansible_distribution_major_version }}.yml"
+        # eg. archlinux-systemd / archlinux-openrc
+        - "{{ ansible_distribution | lower }}-{{ ansible_service_mgr | lower }}.yml"
+        # eg. debian / ubuntu / centos / oraclelinux
+        - "{{ ansible_distribution | lower }}.yml"
+        # eg. redhat / debian / archlinux
+        - "{{ ansible_os_family | lower }}.yml"
+        - default.yaml
+      skip: true
+
+- name: update package cache
+  package:
+    update_cache: true
+
+- name: install dependency
+  package:
+    name: "{{ node_exporter_requirements }}"
+    state: present
+
+- name: detect installed node_exporter version
+  stat:
+    path: "{{ node_exporter_install_path }}/node_exporter"
+  register: stat_node_exporter_binary
+
+- name: create local tmp directory
+  become: false
+  delegate_to: 127.0.0.1
+  file:
+    path: "{{ node_exporter_local_tmp_directory }}"
+    state: directory
+    mode: 0750
+
+- name: create node_exporter group
+  group:
+    name: "{{ node_exporter_system_group }}"
+    state: present
+    system: true
+  when:
+    - node_exporter_system_group != "root"
+
+- name: create node_exporter user
+  user:
+    name: "{{ node_exporter_system_user }}"
+    groups: "{{ node_exporter_system_group }}"
+    append: true
+    shell: /usr/sbin/nologin
+    system: true
+    createhome: false
+    home: /nonexistent
+  when:
+    - node_exporter_system_user != "root"
+
+- name: create install directory
+  file:
+    path: "{{ node_exporter_install_path }}"
+    state: directory
+    owner: "{{ node_exporter_system_user }}"
+    group: "{{ node_exporter_system_group }}"
+    mode: 0755
+
+- name: fix directory rights for {{ node_exporter_install_path | dirname }}
+  file:
+    path: "{{ node_exporter_install_path | dirname }}"
+    state: directory
+    owner: "{{ node_exporter_system_user }}"
+    group: "{{ node_exporter_system_group }}"
+    mode: 0755
+    recurse: true
+
+- name: merge node_exporter server configuration between defaults and custom
+  set_fact:
+    node_exporter_server: "{{ node_exporter_defaults_server |
+      combine( node_exporter_server, recursive=True ) }}"
+
+- name: merge node_exporter tls_server configuration between defaults and custom
+  set_fact:
+    node_exporter_tls_server: "{{ node_exporter_defaults_tls_server |
+      combine( node_exporter_tls_server, recursive=True) }}"
+
+- name: merge node_exporter http_server configuration between defaults and custom
+  set_fact:
+    node_exporter_http_server: "{{ node_exporter_defaults_http_server |
+      combine( node_exporter_http_server, recursive=True ) }}"
+
+- name: merge node_exporter basic_auth_users configuration between defaults and custom
+  set_fact:
+    node_exporter_basic_auth_users: "{{ node_exporter_defaults_basic_auth_users |
+      combine( node_exporter_basic_auth_users, recursive=True ) }}"
+
+- name: merge node_exporter collectors configuration between defaults and custom
+  set_fact:
+    node_exporter_collectors: "{{ node_exporter_defaults_collectors |
+      union( node_exporter_collectors ) }}"
+
+...
