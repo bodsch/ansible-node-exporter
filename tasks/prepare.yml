@@ -100,6 +100,6 @@
 - name: merge node_exporter collectors configuration between defaults and custom
   set_fact:
     node_exporter_collectors: "{{ node_exporter_defaults_collectors |
-      union( node_exporter_collectors ) }}"
+      combine( node_exporter_collectors, recursive=True ) }}"
 
 ...

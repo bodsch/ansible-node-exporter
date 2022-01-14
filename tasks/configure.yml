@@ -8,6 +8,17 @@
     group: "{{ node_exporter_system_group }}"
     mode: 0770
 
+- name: create node_exporter collector configuration
+  template:
+    src: "node_exporter.j2"
+    dest: "{{ node_exporter_defaults_directory }}/node_exporter"
+    force: true
+    owner: root
+    group: "{{ node_exporter_system_group }}"
+    mode: 0640
+  notify:
+    - restart node_exporter
+
 - name: create node_exporter configuration
   template:
     src: "node_exporter/config.yml.j2"

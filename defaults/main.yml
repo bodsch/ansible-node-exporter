@@ -10,7 +10,6 @@ node_exporter_textfile_dir: /var/lib/node_exporter
 
 # https://github.com/prometheus-community/node-exporter-textfile-collector-scripts
 
-
 node_exporter_server: {}
 
 node_exporter_tls_server: {}
@@ -20,13 +19,13 @@ node_exporter_http_server: {}
 node_exporter_basic_auth_users: {}
 
 node_exporter_collectors:
-  - enabled:
-      - systemd
-      - textfile:
-          directory: "/var/lib/node_exporter"
-#      - filesystem:
-#          ignored-mount-points: "^/(sys|proc|dev)($|/)"
-#          ignored-fs-types: "^(sys|proc|auto)fs$"
-  - disabled: []
+  enabled:
+    - systemd
+    - textfile:
+        directory: "/var/lib/node_exporter"
+  #  - filesystem:
+  #      ignored-mount-points: "^/(sys|proc|dev)($|/)"
+  #      ignored-fs-types: "^(sys|proc|auto)fs$"
+  disabled: []
 
 ...

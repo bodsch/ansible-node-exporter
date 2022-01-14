@@ -20,10 +20,10 @@ node_exporter_defaults_http_server: {}
 node_exporter_defaults_basic_auth_users: {}
 
 node_exporter_defaults_collectors:
-  - enabled: []
-  - disabled: []
+  enabled: []
+  disabled: []
 
-# node_exporter_config_directory: /etc/defaults
+node_exporter_defaults_directory: /etc/default
 
 systemd_lib_directory: /lib/systemd/system
 

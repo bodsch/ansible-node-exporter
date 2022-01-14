@@ -5,13 +5,13 @@
 
 - name: download archive
   include_tasks: download.yml
-  #when:
-  #  - not stat_node_exporter_binary.stat.exists
+  when:
+    - not stat_node_exporter_binary.stat.exists
 
 - name: install
   include_tasks: install.yml
-  #when:
-  #  - not stat_node_exporter_binary.stat.exists
+  when:
+    - not stat_node_exporter_binary.stat.exists
 
 - name: configure
   include_tasks: configure.yml
