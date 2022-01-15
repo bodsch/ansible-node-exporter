@@ -1,5 +1,8 @@
 ---
 
+node_exporter_requirements:
+  - iproute
+
 node_exporter_config_directory: /etc/sysconfig
 
 systemd_lib_directory: /usr/lib/systemd/system

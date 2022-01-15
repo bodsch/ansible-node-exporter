@@ -8,15 +8,26 @@ node_exporter_system_group: node_exporter
 node_exporter_config_dir: /etc/node_exporter
 node_exporter_textfile_dir: /var/lib/node_exporter
 
-# https://github.com/prometheus-community/node-exporter-textfile-collector-scripts
+node_exporter_enable_experimental: false
+
+node_exporter_logging:
+  level: warn
+
+node_exporter_web:
+  http_listen_address: "0.0.0.0"
+  http_listen_port: "9100"
+  telemetry_path: "/metrics"
 
 node_exporter_server: {}
 
+# experimental
 node_exporter_tls_server: {}
-
+# experimental
 node_exporter_http_server: {}
-
+# experimental
 node_exporter_basic_auth_users: {}
+
+node_exporter_rules: {}
 
 node_exporter_collectors:
   enabled:

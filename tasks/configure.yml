@@ -19,7 +19,7 @@
   notify:
     - restart node_exporter
 
-- name: create node_exporter configuration
+- name: create (experimental) node_exporter configuration
   template:
     src: "node_exporter/config.yml.j2"
     dest: "{{ node_exporter_config_dir }}/config.yml"
@@ -27,6 +27,8 @@
     owner: root
     group: "{{ node_exporter_system_group }}"
     mode: 0640
+  when:
+    - node_exporter_enable_experimental
   notify:
     - restart node_exporter
 

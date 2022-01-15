@@ -19,6 +19,8 @@ node_exporter_defaults_http_server: {}
 
 node_exporter_defaults_basic_auth_users: {}
 
+node_exporter_defaults_rules: {}
+
 node_exporter_defaults_collectors:
   enabled: []
   disabled: []

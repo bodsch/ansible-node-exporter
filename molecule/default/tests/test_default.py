@@ -107,20 +107,39 @@ def test_directories(host, dirs):
     assert d.exists
 
 
-@pytest.mark.parametrize("files", [
-    "/etc/node_exporter/node_exporter.yml"
-])
-def test_files(host, files):
-    f = host.file(files)
-    assert f.exists
-    assert f.is_file
+def test_files(host, get_vars):
+    """
+    """
+    install_dir = get_vars.get("node_exporter_install_path")
+    defaults_dir = get_vars.get("node_exporter_defaults_directory")
+    # config_dir = get_vars.get("node_exporter_config_dir")
+
+    files = []
+    files.append("/usr/bin/node_exporter")
+
+    if install_dir:
+        files.append("{}/node_exporter".format(install_dir))
+    if defaults_dir:
+        files.append("{}/node_exporter".format(defaults_dir))
+    # if config_dir:
+    #     files.append("{}/config.yml".format(config_dir))
+
+    for _file in files:
+        f = host.file(_file)
+        assert f.exists
+        assert f.is_file
 
 
-def test_user(host):
-    assert host.group("node_exporter").exists
-    assert host.user("node_exporter").exists
-    assert "node_exporter" in host.user("node_exporter").groups
-    assert host.user("node_exporter").home == "/nonexistent"
+def test_user(host, get_vars):
+    """
+    """
+    user = get_vars.get("node_exporter_system_user", "node_exp")
+    group = get_vars.get("node_exporter_system_group", "node_exp")
+
+    assert host.group(group).exists
+    assert host.user(user).exists
+    assert group in host.user(user).groups
+    assert host.user(user).home == "/nonexistent"
 
 
 def test_service(host, get_vars):
@@ -133,7 +152,7 @@ def test_open_port(host, get_vars):
     for i in host.socket.get_listening_sockets():
         print(i)
 
-    node_exporter_server = get_vars.get("node_exporter_config_server")
+    node_exporter_server = get_vars.get("node_exporter_web")
 
     address = node_exporter_server.get("http_listen_address")
     port = node_exporter_server.get("http_listen_port")
