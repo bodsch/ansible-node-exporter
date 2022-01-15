@@ -1,7 +1,7 @@
 
 # Ansible Role:  `node-exporter` 
 
-Ansible role to install and configure [mysqld_exporter](https://github.com/prometheus/mysqld_exporter).
+Ansible role to install and configure [node-exporter](https://github.com/prometheus/node-exporter).
 
 [![GitHub Workflow Status](https://img.shields.io/github/workflow/status/bodsch/ansible-node-exporter/CI)][ci]
 [![GitHub issues](https://img.shields.io/github/issues/bodsch/ansible-node-exporter)][issues]
