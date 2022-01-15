@@ -11,8 +11,6 @@ node_exporter_local_tmp_directory: "{{
 node_exporter_requirements:
   - iproute2
 
-node_exporter_defaults_server: {}
-
 node_exporter_defaults_tls_server: {}
 
 node_exporter_defaults_http_server: {}

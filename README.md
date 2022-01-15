@@ -19,7 +19,8 @@ Tested on
 * Debian 10 / 11
 * Ubuntu 20.04
 * CentOS 8
-* OracleLinux 8 
+* OracleLinux 8
+* ArchLinux
 
 
 ## Contribution
@@ -43,7 +44,13 @@ node_exporter_system_group: node_exporter
 node_exporter_config_dir: /etc/node_exporter
 node_exporter_textfile_dir: /var/lib/node_exporter
 
-node_exporter_server: {}
+node_exporter_logging:
+  level: warn
+
+node_exporter_web:
+  http_listen_address: "0.0.0.0"
+  http_listen_port: "9100"
+  telemetry_path: "/metrics"
 
 node_exporter_tls_server: {}
 
@@ -53,11 +60,14 @@ node_exporter_basic_auth_users: {}
 
 node_exporter_collectors:
   enabled:
-    - systemd
     - textfile:
         directory: "/var/lib/node_exporter"
   disabled: []
 ```
+
+### example
+
+see [molecule/default/group_vars/all/vars.yml](molecule/default/group_vars/all/vars.yml)
 
 ### collectors
 

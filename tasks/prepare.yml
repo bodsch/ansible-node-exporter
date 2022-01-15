@@ -77,11 +77,6 @@
     mode: 0755
     recurse: true
 
-- name: merge node_exporter server configuration between defaults and custom
-  set_fact:
-    node_exporter_server: "{{ node_exporter_defaults_server |
-      combine( node_exporter_server, recursive=True ) }}"
-
 - name: merge node_exporter tls_server configuration between defaults and custom
   set_fact:
     node_exporter_tls_server: "{{ node_exporter_defaults_tls_server |

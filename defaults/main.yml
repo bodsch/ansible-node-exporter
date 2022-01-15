@@ -18,8 +18,6 @@ node_exporter_web:
   http_listen_port: "9100"
   telemetry_path: "/metrics"
 
-node_exporter_server: {}
-
 # experimental
 node_exporter_tls_server: {}
 # experimental
@@ -31,7 +29,6 @@ node_exporter_rules: {}
 
 node_exporter_collectors:
   enabled:
-    - systemd
     - textfile:
         directory: "/var/lib/node_exporter"
   #  - filesystem:
