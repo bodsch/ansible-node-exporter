@@ -16,12 +16,15 @@ Ansible role to install and configure [node-exporter](https://github.com/prometh
 
 Tested on
 
-* Debian 10 / 11
-* Ubuntu 20.04
-* CentOS 8
-* OracleLinux 8
-* ArchLinux
-
+* Arch Linux
+* Debian based
+    - Debian 10 / 11
+    - Ubuntu 20.10
+* RedHat based
+    - CentOS 8 (**not longer supported**)
+    - Alma Linux 8
+    - Rocky Linux 8
+    - Oracle Linux 8
 
 ## Contribution
 
@@ -43,6 +46,8 @@ node_exporter_system_user: node_exporter
 node_exporter_system_group: node_exporter
 node_exporter_config_dir: /etc/node_exporter
 node_exporter_textfile_dir: /var/lib/node_exporter
+
+node_exporter_direct_download: false
 
 node_exporter_logging:
   level: warn

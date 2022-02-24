@@ -22,41 +22,75 @@
   package:
     update_cache: true
 
+- name: define delegate instance for download handling
+  set_fact:
+    node_exporter_delegate_to: "{{ ansible_host }}"
+    node_exporter_local_tmp_directory: "{{
+        lookup('env', 'CUSTOM_LOCAL_TMP_DIRECTORY') |
+        default('/var/cache/ansible/node_exporter', true) }}/{{ node_exporter_version }}"
+  when:
+    - node_exporter_direct_download
+
 - name: install dependency
   package:
     name: "{{ node_exporter_requirements }}"
     state: present
 
-- name: detect installed node_exporter version
+- name: detect our installation path '{{ node_exporter_install_path | dirname }}'
+  stat:
+    path: "{{ node_exporter_install_path | dirname }}"
+    get_checksum: false
+  register: stat_node_exporter_path
+  ignore_errors: true
+
+- name: old installation
+  block:
+    - name: stop old service
+      service:
+        name: node_exporter
+        state: stopped
+        enabled: false
+
+    - name: remove installed node_exporter
+      file:
+        state: absent
+        path: "{{ stat_node_exporter_path.stat.path }}"
+  when:
+    - stat_node_exporter_path is defined
+    - stat_node_exporter_path.stat is defined
+    - stat_node_exporter_path.stat.islnk is defined
+    - stat_node_exporter_path.stat.islnk
+
+- name: detect installed node_exporter binary
   stat:
     path: "{{ node_exporter_install_path }}/node_exporter"
   register: stat_node_exporter_binary
 
-- name: create local tmp directory
+- name: create download directory
   become: false
-  delegate_to: 127.0.0.1
+  delegate_to: "{{ node_exporter_delegate_to }}"
   file:
     path: "{{ node_exporter_local_tmp_directory }}"
     state: directory
     mode: 0750
 
-- name: create node_exporter group
-  group:
-    name: "{{ node_exporter_system_group }}"
-    state: present
-    system: true
-  when:
-    - node_exporter_system_group != "root"
+- name: user and group handling
+  block:
+    - name: create node_exporter group
+      group:
+        name: "{{ node_exporter_system_group }}"
+        state: present
+        system: true
 
-- name: create node_exporter user
-  user:
-    name: "{{ node_exporter_system_user }}"
-    groups: "{{ node_exporter_system_group }}"
-    append: true
-    shell: /usr/sbin/nologin
-    system: true
-    createhome: false
-    home: /nonexistent
+    - name: create node_exporter user
+      user:
+        name: "{{ node_exporter_system_user }}"
+        groups: "{{ node_exporter_system_group }}"
+        append: true
+        shell: /usr/sbin/nologin
+        system: true
+        createhome: false
+        home: /nonexistent
   when:
     - node_exporter_system_user != "root"
 

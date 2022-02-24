@@ -1,8 +1,8 @@
 ---
 
-- name: download node_exporter binary to local folder
+- name: download node_exporter binary archive
   become: false
-  delegate_to: 127.0.0.1
+  delegate_to: "{{ node_exporter_delegate_to }}"
   get_url:
     url: "{{ node_exporter_release_download_url }}/download/v{{ node_exporter_version }}/node_exporter-{{ node_exporter_version }}.linux-amd64.tar.gz"
     dest: "{{ node_exporter_local_tmp_directory }}/node_exporter-linux-amd64.tar.gz"
@@ -14,17 +14,18 @@
 
 - name: extract node_exporter archive
   become: false
-  delegate_to: 127.0.0.1
+  delegate_to: "{{ node_exporter_delegate_to }}"
   unarchive:
     src: "{{ node_exporter_local_tmp_directory }}/node_exporter-linux-amd64.tar.gz"
-    dest: "{{ node_exporter_local_tmp_directory }}/"
+    dest: "{{ node_exporter_local_tmp_directory }}"
     copy: false
+  register: _extract_archive
 
 - name: detect binary file for node_exporter
   become: false
-  delegate_to: 127.0.0.1
+  delegate_to: "{{ node_exporter_delegate_to }}"
   stat:
-    path: "{{ node_exporter_local_tmp_directory }}/node_exporter-{{ node_exporter_version }}.linux-amd64//node_exporter"
+    path: "{{ node_exporter_local_tmp_directory }}/node_exporter-{{ node_exporter_version }}.linux-amd64/node_exporter"
   register: stat_file_binary
 
 - block:
@@ -35,6 +36,7 @@
         mode: 0755
         owner: "{{ node_exporter_system_user }}"
         group: "{{ node_exporter_system_group }}"
+        remote_src: "{{ 'true' if node_exporter_direct_download else 'false' }}"
 
     - name: make files executable
       file:
@@ -51,6 +53,7 @@
     dest: /usr/bin/node_exporter
     state: link
     force: true
+    follow: false
   notify:
     - restart node_exporter
 
