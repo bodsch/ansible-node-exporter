@@ -51,6 +51,11 @@
         state: stopped
         enabled: false
 
+    - name: remove installed systemd unit
+      file:
+        state: absent
+        path: /etc/systemd/system/node_exporter.service
+
     - name: remove installed node_exporter
       file:
         state: absent
@@ -58,8 +63,8 @@
   when:
     - stat_node_exporter_path is defined
     - stat_node_exporter_path.stat is defined
-    - stat_node_exporter_path.stat.islnk is defined
-    - stat_node_exporter_path.stat.islnk
+    - stat_node_exporter_path.stat.isdir is defined
+    - not stat_node_exporter_path.stat.isdir
 
 - name: detect installed node_exporter binary
   stat:
