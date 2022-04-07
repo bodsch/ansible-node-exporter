@@ -1,0 +1,22 @@
+---
+
+node_exporter_logging:
+  level: debug
+
+node_exporter_collectors:
+  enabled:
+    - textfile:
+        directory: "/var/lib/node_exporter"
+    - filesystem:
+        mount-points-exclude: "^/(sys|proc|dev)($|/)"
+        fs-types-exclude: "^(sys|proc|auto)fs$"
+  disabled:
+    - systemd
+    - zfs
+    - tapestats
+    - mdadm
+
+node_exporter_basic_auth_users:
+  randomuser: examplepassword
+
+...

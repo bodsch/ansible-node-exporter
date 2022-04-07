@@ -50,6 +50,8 @@
         name: node_exporter
         state: stopped
         enabled: false
+      notify:
+        - daemon-reload
 
     - name: remove installed systemd unit
       file:
@@ -65,6 +67,9 @@
     - stat_node_exporter_path.stat is defined
     - stat_node_exporter_path.stat.isdir is defined
     - not stat_node_exporter_path.stat.isdir
+
+- name: flush handlers
+  meta: flush_handlers
 
 - name: detect installed node_exporter binary
   stat:

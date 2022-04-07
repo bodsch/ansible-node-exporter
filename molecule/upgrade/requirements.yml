@@ -1,0 +1,7 @@
+---
+
+- name: ca_node_exporter
+  src: https://github.com/cloudalchemy/ansible-node-exporter.git
+  scm: git
+
+...
