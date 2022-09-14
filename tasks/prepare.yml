@@ -65,8 +65,8 @@
   when:
     - stat_node_exporter_path is defined
     - stat_node_exporter_path.stat is defined
-    - stat_node_exporter_path.stat.isdir is defined
-    - not stat_node_exporter_path.stat.isdir
+    - stat_node_exporter_path.stat.islnk is defined
+    - stat_node_exporter_path.stat.islnk
 
 - name: flush handlers
   meta: flush_handlers
@@ -121,24 +121,11 @@
     mode: 0755
     recurse: true
 
-- name: merge node_exporter tls_server configuration between defaults and custom
+- name: merge node_exporter configuration between defaults and custom
   set_fact:
-    node_exporter_tls_server: "{{ node_exporter_defaults_tls_server |
-      combine( node_exporter_tls_server, recursive=True) }}"
-
-- name: merge node_exporter http_server configuration between defaults and custom
-  set_fact:
-    node_exporter_http_server: "{{ node_exporter_defaults_http_server |
-      combine( node_exporter_http_server, recursive=True ) }}"
-
-- name: merge node_exporter basic_auth_users configuration between defaults and custom
-  set_fact:
-    node_exporter_basic_auth_users: "{{ node_exporter_defaults_basic_auth_users |
-      combine( node_exporter_basic_auth_users, recursive=True ) }}"
-
-- name: merge node_exporter collectors configuration between defaults and custom
-  set_fact:
-    node_exporter_collectors: "{{ node_exporter_defaults_collectors |
-      combine( node_exporter_collectors, recursive=True ) }}"
+    node_exporter_tls_server: "{{ node_exporter_defaults_tls_server | combine( node_exporter_tls_server, recursive=True) }}"
+    node_exporter_http_server: "{{ node_exporter_defaults_http_server | combine( node_exporter_http_server, recursive=True ) }}"
+    node_exporter_basic_auth_users: "{{ node_exporter_defaults_basic_auth_users | combine( node_exporter_basic_auth_users, recursive=True ) }}"
+    node_exporter_collectors: "{{ node_exporter_defaults_collectors | combine( node_exporter_collectors, recursive=True ) }}"
 
 ...
