@@ -26,7 +26,6 @@ galaxy_info:
     - name: ArchLinux
 
   galaxy_tags:
-    - node_exporter
     - collector
     - monitoring
     - metrics

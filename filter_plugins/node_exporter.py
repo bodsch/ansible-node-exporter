@@ -3,7 +3,6 @@
 from __future__ import (absolute_import, print_function)
 __metaclass__ = type
 
-import os
 import re
 from ansible.utils.display import Display
 
@@ -14,11 +13,16 @@ class FilterModule(object):
     """
         Ansible file jinja2 tests
     """
-
     def filters(self):
         return {
+            'type': self.var_type,
             'node_exporter_checksum': self.checksum,
         }
+
+    def var_type(self, var):
+        """
+        """
+        return type(var).__name__
 
     def checksum(self, data, os, arch):
         """
@@ -33,7 +37,5 @@ class FilterModule(object):
 
         if isinstance(checksum, str):
             checksum = checksum.split(" ")[0]
-
         # display.v("= checksum: {}".format(checksum))
-
         return checksum
