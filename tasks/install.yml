@@ -1,5 +1,48 @@
 ---
 
+- name: detect binary file for node_exporter
+  become: false
+  delegate_to: "{{ node_exporter_delegate_to }}"
+  run_once: "{{ 'false' if node_exporter_direct_download else 'true' }}"
+  stat:
+    path: "{{ node_exporter_local_tmp_directory }}/node_exporter-{{ node_exporter_version }}.linux-amd64/node_exporter"
+  register: stat_file_binary
+
+- block:
+    - name: propagate node_exporter binaries
+      copy:
+        src: "{{ node_exporter_local_tmp_directory }}/node_exporter-{{ node_exporter_version }}.linux-amd64//node_exporter"
+        dest: "{{ node_exporter_install_path }}/node_exporter"
+        mode: 0755
+        owner: "{{ node_exporter_system_user }}"
+        group: "{{ node_exporter_system_group }}"
+        remote_src: "{{ 'true' if node_exporter_direct_download else 'false' }}"
+
+    - name: make files executable
+      file:
+        path: "{{ node_exporter_install_path }}/node_exporter"
+        mode: 0755
+        owner: "{{ node_exporter_system_user }}"
+        group: "{{ node_exporter_system_group }}"
+  when:
+    - stat_file_binary.stat.exists
+
+- name: create local facts
+  template:
+    src: ansible_facts.j2
+    dest: /etc/ansible/facts.d/prometheus.fact
+    mode: 0755
+
+- name: create link to binary
+  file:
+    src: "{{ node_exporter_install_path }}/node_exporter"
+    dest: /usr/bin/node_exporter
+    state: link
+    force: true
+    follow: false
+  notify:
+    - restart node_exporter
+
 - name: create node_exporter data directory
   file:
     path: "{{ node_exporter_textfile_dir }}"

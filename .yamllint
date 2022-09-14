@@ -1,4 +1,5 @@
 ---
+
 extends: default
 rules:
   line-length:
@@ -12,13 +13,9 @@ rules:
 #     max-spaces-inside: 1
 #   indentation:
 #     spaces: 2
-#   comments: disable
-#   comments-indentation: disable
+  comments: enable
+  comments-indentation: disable
 
 ignore: |
-  tests/
   molecule/
-  .molecule/
-  .travis.yml
-  .tox
   .github

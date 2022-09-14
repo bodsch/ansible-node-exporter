@@ -35,6 +35,33 @@
   package:
     name: "{{ node_exporter_requirements }}"
     state: present
+  when:
+    - node_exporter_requirements | default([]) | count > 0
+
+- block:
+    - name: get latest release
+      uri:
+        url: "https://api.github.com/repos/prometheus/node_exporter/releases/latest"
+        method: GET
+        return_content: true
+        status_code: 200
+        body_format: json
+        validate_certs: false
+        user: "{{ lookup('env', 'GH_USER') | default(omit) }}"
+        password: "{{ lookup('env', 'GH_TOKEN') | default(omit) }}"
+      # no_log: "{{ not lookup('env', 'ANSIBLE_DEBUG') | bool }}"
+      register: _latest_release
+      until: _latest_release.status == 200
+      retries: 5
+
+    - name: set node_exporter version to {{ _latest_release.json.tag_name[1:] }}
+      set_fact:
+        node_exporter_version: "{{ _latest_release.json.tag_name[1:] }}"
+  delegate_to: localhost
+  become: false
+  run_once: true
+  when:
+    - node_exporter_version == "latest"
 
 - name: detect our installation path '{{ node_exporter_install_path | dirname }}'
   stat:
@@ -57,6 +84,8 @@
       file:
         state: absent
         path: /etc/systemd/system/node_exporter.service
+      when:
+        - ansible_service_mgr | lower == "systemd"
 
     - name: remove installed node_exporter
       file:
@@ -79,6 +108,7 @@
 - name: create download directory
   become: false
   delegate_to: "{{ node_exporter_delegate_to }}"
+  run_once: "{{ 'false' if node_exporter_direct_download else 'true' }}"
   file:
     path: "{{ node_exporter_local_tmp_directory }}"
     state: directory
@@ -121,24 +151,19 @@
     mode: 0755
     recurse: true
 
-- name: merge node_exporter tls_server configuration between defaults and custom
-  set_fact:
-    node_exporter_tls_server: "{{ node_exporter_defaults_tls_server |
-      combine( node_exporter_tls_server, recursive=True) }}"
+- name: create ansible local facts directory
+  file:
+    dest: /etc/ansible/facts.d
+    state: directory
+    owner: root
+    group: root
+    mode: 0775
 
-- name: merge node_exporter http_server configuration between defaults and custom
+- name: merge node_exporter configuration between defaults and custom
   set_fact:
-    node_exporter_http_server: "{{ node_exporter_defaults_http_server |
-      combine( node_exporter_http_server, recursive=True ) }}"
-
-- name: merge node_exporter basic_auth_users configuration between defaults and custom
-  set_fact:
-    node_exporter_basic_auth_users: "{{ node_exporter_defaults_basic_auth_users |
-      combine( node_exporter_basic_auth_users, recursive=True ) }}"
-
-- name: merge node_exporter collectors configuration between defaults and custom
-  set_fact:
-    node_exporter_collectors: "{{ node_exporter_defaults_collectors |
-      combine( node_exporter_collectors, recursive=True ) }}"
+    node_exporter_tls_server: "{{ node_exporter_defaults_tls_server | combine( node_exporter_tls_server, recursive=True) }}"
+    node_exporter_http_server: "{{ node_exporter_defaults_http_server | combine( node_exporter_http_server, recursive=True ) }}"
+    node_exporter_basic_auth_users: "{{ node_exporter_defaults_basic_auth_users | combine( node_exporter_basic_auth_users, recursive=True ) }}"
+    node_exporter_collectors: "{{ node_exporter_defaults_collectors | combine( node_exporter_collectors, recursive=True ) }}"
 
 ...

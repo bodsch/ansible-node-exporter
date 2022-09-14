@@ -1,8 +1,21 @@
 ---
 
+- block:
+    - name: get checksum list
+      set_fact:
+        __prometheus_checksums: "{{ lookup('url', 'https://github.com/prometheus/node_exporter/releases/download/v' + node_exporter_version + '/sha256sums.txt', wantlist=True) | list }}"
+
+    - name: get checksum for {{ go_arch }} architecture
+      set_fact:
+        __prometheus_checksum: "{{ __prometheus_checksums | node_exporter_checksum('linux', go_arch) }}"
+  become: false
+  delegate_to: localhost
+  run_once: true
+
 - name: download node_exporter binary archive
   become: false
   delegate_to: "{{ node_exporter_delegate_to }}"
+  run_once: "{{ 'false' if node_exporter_direct_download else 'true' }}"
   get_url:
     url: "{{ node_exporter_release_download_url }}/download/v{{ node_exporter_version }}/node_exporter-{{ node_exporter_version }}.linux-amd64.tar.gz"
     dest: "{{ node_exporter_local_tmp_directory }}/node_exporter-linux-amd64.tar.gz"
@@ -15,46 +28,11 @@
 - name: extract node_exporter archive
   become: false
   delegate_to: "{{ node_exporter_delegate_to }}"
+  run_once: "{{ 'false' if node_exporter_direct_download else 'true' }}"
   unarchive:
     src: "{{ node_exporter_local_tmp_directory }}/node_exporter-linux-amd64.tar.gz"
     dest: "{{ node_exporter_local_tmp_directory }}"
     copy: false
   register: _extract_archive
-
-- name: detect binary file for node_exporter
-  become: false
-  delegate_to: "{{ node_exporter_delegate_to }}"
-  stat:
-    path: "{{ node_exporter_local_tmp_directory }}/node_exporter-{{ node_exporter_version }}.linux-amd64/node_exporter"
-  register: stat_file_binary
-
-- block:
-    - name: propagate node_exporter binaries
-      copy:
-        src: "{{ node_exporter_local_tmp_directory }}/node_exporter-{{ node_exporter_version }}.linux-amd64//node_exporter"
-        dest: "{{ node_exporter_install_path }}/node_exporter"
-        mode: 0755
-        owner: "{{ node_exporter_system_user }}"
-        group: "{{ node_exporter_system_group }}"
-        remote_src: "{{ 'true' if node_exporter_direct_download else 'false' }}"
-
-    - name: make files executable
-      file:
-        path: "{{ node_exporter_install_path }}/node_exporter"
-        mode: 0755
-        owner: "{{ node_exporter_system_user }}"
-        group: "{{ node_exporter_system_group }}"
-  when:
-    - stat_file_binary.stat.exists
-
-- name: create link to binary
-  file:
-    src: "{{ node_exporter_install_path }}/node_exporter"
-    dest: /usr/bin/node_exporter
-    state: link
-    force: true
-    follow: false
-  notify:
-    - restart node_exporter
 
 ...
