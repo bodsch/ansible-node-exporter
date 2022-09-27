@@ -1,7 +1,7 @@
 
 # Ansible Role:  `node-exporter` 
 
-Ansible role to install and configure [node-exporter](https://github.com/prometheus/node-exporter).
+Ansible role to install and configure [node-exporter](https://github.com/prometheus/node_exporter).
 
 [![GitHub Workflow Status](https://img.shields.io/github/workflow/status/bodsch/ansible-node-exporter/CI)][ci]
 [![GitHub issues](https://img.shields.io/github/issues/bodsch/ansible-node-exporter)][issues]
@@ -10,6 +10,19 @@ Ansible role to install and configure [node-exporter](https://github.com/prometh
 [ci]: https://github.com/bodsch/ansible-node-exporter/actions
 [issues]: https://github.com/bodsch/ansible-node-exporter/issues?q=is%3Aopen+is%3Aissue
 [releases]: https://github.com/bodsch/ansible-node-exporter/releases
+
+
+If `latest` is set for `node_exporter_version`, the role tries to install the latest release version.  
+**Please use this with caution, as incompatibilities between releases may occur!**
+
+The binaries are installed below `/usr/local/bin/node_exporter/${node_exporter_version}` and later linked to `/usr/bin`. 
+This should make it possible to downgrade relatively safely.
+
+The application archive is stored on the Ansible controller, unpacked and then the binaries are copied to the target system.
+The cache directory can be defined via the environment variable `CUSTOM_LOCAL_TMP_DIRECTORY`. 
+By default it is `${HOME}/.cache/ansible/node_exporter`.
+If this type of installation is not desired, the download can take place directly on the target system. 
+However, this must be explicitly activated by setting `node_exporter_direct_download` to `true`.
 
 
 ## Operating systems
@@ -34,7 +47,7 @@ Please read [Contribution](CONTRIBUTING.md)
 
 The `master` Branch is my *Working Horse* includes the "latest, hot shit" and can be complete broken!
 
-If you want to use something stable, please use a [Tagged Version](https://github.com/bodsch/ansible-mysql-exporter/tags)!
+If you want to use something stable, please use a [Tagged Version](https://github.com/bodsch/node_exporter/tags)!
 
 ## Configuration
 
