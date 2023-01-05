@@ -3,7 +3,7 @@ name: CI
 
 on:
   schedule:
-    - cron: "0 2 * * 0"
+    - cron: "0 1 * * 0"
   workflow_dispatch:
   workflow_run:
     workflows:
@@ -34,12 +34,12 @@ jobs:
 
     steps:
       - name: check out the codebase.
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           path: 'ansible-node-exporter'
 
       - name: 🐍 set up python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: '3.x'
 
@@ -74,12 +74,12 @@ jobs:
 
     steps:
       - name: check out the codebase.
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           path: 'ansible-node-exporter'
 
       - name: 🐍 set up python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: '3.x'
 
@@ -114,12 +114,12 @@ jobs:
 
     steps:
       - name: check out the codebase.
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           path: 'ansible-node-exporter'
 
       - name: 🐍 set up python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: '3.x'
 

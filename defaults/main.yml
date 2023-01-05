@@ -12,13 +12,12 @@ node_exporter_direct_download: false
 
 node_exporter_enable_experimental: false
 
-node_exporter_logging:
-  level: warn
-
-node_exporter_web:
-  http_listen_address: "0.0.0.0"
-  http_listen_port: "9100"
-  telemetry_path: "/metrics"
+node_exporter_service:
+  log:
+    level: warn
+  web:
+    listen_address: "0.0.0.0:9100"
+    telemetry_path: "/metrics"
 
 # experimental
 node_exporter_tls_server: {}

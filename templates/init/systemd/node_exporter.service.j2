@@ -1,23 +1,23 @@
 {{ ansible_managed | comment }}
 
 [Unit]
-Description = Prometheus exporter for hardware and OS metrics exposed by *NIX kernels with pluggable metric collectors.
-After       = network-online.target
+Description       = Prometheus exporter for hardware and OS metrics exposed by *NIX kernels with pluggable metric collectors.
+After             = network-online.target
 
 [Service]
-Type        = simple
-Environment = "GOMAXPROCS={{ ansible_processor_vcpus | default(ansible_processor_count) }}"
-EnvironmentFile = {{ node_exporter_defaults_directory }}/node_exporter
+Type              = simple
+Environment       = "GOMAXPROCS={{ ansible_processor_vcpus | default(ansible_processor_count) }}"
+EnvironmentFile   = {{ node_exporter_defaults_directory }}/node_exporter
 
-User        = {{ node_exporter_system_user }}
-Group       = {{ node_exporter_system_group }}
+User              = {{ node_exporter_system_user }}
+Group             = {{ node_exporter_system_group }}
 
-ExecReload  = /bin/kill -HUP $MAINPID
-ExecStart   = /usr/bin/node_exporter $OPTIONS
+ExecReload        = /bin/kill -HUP $MAINPID
+ExecStart         = /usr/bin/node_exporter $OPTIONS
 
-LimitNOFILE = 65000
-SyslogIdentifier = node_exporter
-Restart     = always
+LimitNOFILE       = 65000
+SyslogIdentifier  = node_exporter
+Restart           = always
 
 [Install]
-WantedBy    = multi-user.target
+WantedBy          = multi-user.target

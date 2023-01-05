@@ -25,31 +25,32 @@ def pp_json(json_thing, sort=True, indents=2):
 
 
 def base_directory():
-    """ ... """
+    """
+    """
     cwd = os.getcwd()
 
-    if ('group_vars' in os.listdir(cwd)):
+    if 'group_vars' in os.listdir(cwd):
         directory = "../.."
         molecule_directory = "."
     else:
         directory = "."
-        molecule_directory = "molecule/{}".format(os.environ.get('MOLECULE_SCENARIO_NAME'))
+        molecule_directory = f"molecule/{os.environ.get('MOLECULE_SCENARIO_NAME')}"
 
     return directory, molecule_directory
 
 
 def read_ansible_yaml(file_name, role_name):
-    ext_arr = ["yml", "yaml"]
-
+    """
+    """
     read_file = None
 
-    for e in ext_arr:
-        test_file = "{}.{}".format(file_name, e)
+    for e in ["yml", "yaml"]:
+        test_file = f"{file_name}.{e}"
         if os.path.isfile(test_file):
             read_file = test_file
             break
 
-    return "file={} name={}".format(read_file, role_name)
+    return f"file={read_file} name={role_name}"
 
 
 @pytest.fixture()
@@ -63,21 +64,22 @@ def get_vars(host):
     """
     base_dir, molecule_dir = base_directory()
     distribution = host.system_info.distribution
+    operation_system = None
 
     if distribution in ['debian', 'ubuntu']:
-        os = "debian"
+        operation_system = "debian"
     elif distribution in ['redhat', 'ol', 'centos', 'rocky', 'almalinux']:
-        os = "redhat"
-    elif distribution in ['arch']:
-        os = "archlinux"
+        operation_system = "redhat"
+    elif distribution in ['arch', 'artix']:
+        operation_system = f"{distribution}linux"
 
     # print(" -> {} / {}".format(distribution, os))
     # print(" -> {}".format(base_dir))
 
-    file_defaults      = read_ansible_yaml("{}/defaults/main".format(base_dir), "role_defaults")
-    file_vars          = read_ansible_yaml("{}/vars/main".format(base_dir), "role_vars")
-    file_distibution   = read_ansible_yaml("{}/vars/{}".format(base_dir, os), "role_distibution")
-    file_molecule      = read_ansible_yaml("{}/group_vars/all/vars".format(molecule_dir), "test_vars")
+    file_defaults      = read_ansible_yaml(f"{base_dir}/defaults/main", "role_defaults")
+    file_vars          = read_ansible_yaml(f"{base_dir}/vars/main", "role_vars")
+    file_distibution   = read_ansible_yaml(f"{base_dir}/vars/{operation_system}", "role_distibution")
+    file_molecule      = read_ansible_yaml(f"{molecule_dir}/group_vars/all/vars", "test_vars")
     # file_host_molecule = read_ansible_yaml("{}/host_vars/{}/vars".format(base_dir, HOST), "host_vars")
 
     defaults_vars      = host.ansible("include_vars", file_defaults).get("ansible_facts").get("role_defaults")
@@ -98,35 +100,51 @@ def get_vars(host):
     return result
 
 
+def local_facts(host):
+    """
+      return local facts
+    """
+    return host.ansible("setup").get("ansible_facts").get("ansible_local").get("node_exporter")
+
+
 @pytest.mark.parametrize("dirs", [
     "/etc/node_exporter",
 ])
 def test_directories(host, dirs):
     d = host.file(dirs)
     assert d.is_directory
-    assert d.exists
 
 
 def test_files(host, get_vars):
     """
     """
+    distribution = host.system_info.distribution
+    release = host.system_info.release
+
+    print(f"distribution: {distribution}")
+    print(f"release     : {release}")
+
+    version = local_facts(host).get("version")
+
     install_dir = get_vars.get("node_exporter_install_path")
     defaults_dir = get_vars.get("node_exporter_defaults_directory")
     # config_dir = get_vars.get("node_exporter_config_dir")
+
+    if 'latest' in install_dir:
+        install_dir = install_dir.replace('latest', version)
 
     files = []
     files.append("/usr/bin/node_exporter")
 
     if install_dir:
-        files.append("{}/node_exporter".format(install_dir))
-    if defaults_dir:
-        files.append("{}/node_exporter".format(defaults_dir))
+        files.append(f"{install_dir}/node_exporter")
+    if defaults_dir and not distribution == "artix":
+        files.append(f"{defaults_dir}/node_exporter")
     # if config_dir:
-    #     files.append("{}/config.yml".format(config_dir))
+    #     files.append(f"{config_dir}/config.yml")
 
     for _file in files:
         f = host.file(_file)
-        assert f.exists
         assert f.is_file
 
 
@@ -152,10 +170,18 @@ def test_open_port(host, get_vars):
     for i in host.socket.get_listening_sockets():
         print(i)
 
-    node_exporter_server = get_vars.get("node_exporter_web")
+    node_exporter_service = get_vars.get("node_exporter_service", {})
 
-    address = node_exporter_server.get("http_listen_address")
-    port = node_exporter_server.get("http_listen_port")
+    print(node_exporter_service)
 
-    service = host.socket("tcp://{0}:{1}".format(address, port))
+    if isinstance(node_exporter_service, dict):
+        node_exporter__web = node_exporter_service.get("web", {})
+        listen_address = node_exporter__web.get("listen_address")
+
+    if not listen_address:
+        listen_address = "0.0.0.0:9100"
+
+    print(listen_address)
+
+    service = host.socket(f"tcp://{listen_address}")
     assert service.is_listening

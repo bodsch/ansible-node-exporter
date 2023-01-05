@@ -14,6 +14,28 @@ node_exporter_requirements:
   - iproute2
   - gzip
 
+node_exporter_defaults_service:
+  log:
+    level: info
+    format: ""
+  path:
+    procfs: /proc         # procfs mountpoint.
+    sysfs: /sys           # sysfs mountpoint.
+    root: /               # rootfs mountpoint.
+  web:
+    # [EXPERIMENTAL]
+    # Path to configuration file that can enable TLS or authentication.
+    config:
+      file: ""
+    # Address on which to expose metrics and web interface.
+    listen_address: "0.0.0.0:9100"
+    # Path under which to expose metrics.
+    telemetry_path: "/metrics"
+    # Exclude metrics about the exporter itself (promhttp_*, process_*, go_*).
+    disable_exporter_metrics: false
+    # Maximum number of parallel scrape requests. Use 0 to disable.
+    max_requests: 40
+
 node_exporter_defaults_tls_server: {}
 
 node_exporter_defaults_http_server: {}

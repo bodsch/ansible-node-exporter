@@ -1,6 +1,7 @@
 #jinja2: trim_blocks: True, lstrip_blocks: True
 # {{ ansible_managed }}
 
+{% set _loglevel = "info" %}
 {% set _enabled_collectors = [] %}
 {% set _disabled_collectors = [] %}
 {% if node_exporter_collectors is defined and
@@ -15,21 +16,43 @@
 GOMAXPROCS={{ ansible_processor_vcpus | default(ansible_processor_count) }}
 
 OPTIONS="
-{% for collector in _enabled_collectors %}
-  {% if collector | type == "dict" %}
-    {% set name, options = (collector.items() | list)[0] %}
-  --collector.{{ name }} \
-    {% for k,v in options | dictsort %}
-  --collector.{{ name }}.{{ k }}={{ v | quote }} \
-    {% endfor %}
-  {% else %}
-  --collector.{{ collector }} \
+  {# log configuration #}
+  {% if node_exporter_service.log.level in ["debug", "info", "warn", "error"] %}
+    {% set _loglevel = node_exporter_service.log.level %}
   {% endif %}
-{% endfor %}
-{% for collector in _disabled_collectors %}
+  --log.level={{ _loglevel }} \
+  {% if node_exporter_service.log.format is defined and
+        node_exporter_service.log.format in ["logfmt", "json"] %}
+  --log.format={{ node_exporter_service.log.format }} \
+  {% endif %}
+  {% for collector in _enabled_collectors %}
+    {% if collector | type == "dict" %}
+      {% set name, options = (collector.items() | list)[0] %}
+  --collector.{{ name }} \
+      {% for k,v in options | dictsort %}
+  --collector.{{ name }}.{{ k }}={{ v | quote }} \
+      {% endfor %}
+    {% else %}
+  --collector.{{ collector }} \
+    {% endif %}
+  {% endfor %}
+  {% for collector in _disabled_collectors %}
   --no-collector.{{ collector }} \
-{% endfor %}
-  --log.level={{ node_exporter_logging.level | default('info') }} \
-  --web.listen-address={{ node_exporter_web.http_listen_address | default('127.0.0.1') }}:{{ node_exporter_web.http_listen_port | default('9100') }} \
-  --web.telemetry-path={{ node_exporter_web.telemetry_path | default('/metrics') }}
+  {% endfor %}
+  {% if node_exporter_service.web.listen_address is defined and
+        node_exporter_service.web.listen_address | string | length > 0 %}
+  --web.listen-address={{ node_exporter_service.web.listen_address }} \
+  {% endif %}
+  {% if node_exporter_service.web.telemetry_path is defined and
+        node_exporter_service.web.telemetry_path | string | length > 0 %}
+  --web.telemetry-path={{ node_exporter_service.web.telemetry_path }} \
+  {% endif %}
+  {% if node_exporter_service.web.max_requests is defined and
+        node_exporter_service.web.max_requests | string | length > 0 %}
+  --web.max-requests={{ node_exporter_service.web.max_requests }} \
+  {% endif %}
+  {% if node_exporter_service.web.disable_exporter_metrics is defined and
+        node_exporter_service.web.disable_exporter_metrics %}
+  --web.disable-exporter-metrics \
+  {% endif %}
 "

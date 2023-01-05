@@ -1,7 +1,7 @@
 ---
 
 - name: create node_exporter configuration directory
-  file:
+  ansible.builtin.file:
     path: "{{ node_exporter_config_dir }}"
     state: directory
     owner: root
@@ -9,7 +9,7 @@
     mode: 0770
 
 - name: create node_exporter collector configuration
-  template:
+  ansible.builtin.template:
     src: "node_exporter.j2"
     dest: "{{ node_exporter_defaults_directory }}/node_exporter"
     force: true
@@ -20,7 +20,7 @@
     - restart node_exporter
 
 - name: create (experimental) node_exporter configuration
-  template:
+  ansible.builtin.template:
     src: "node_exporter/config.yml.j2"
     dest: "{{ node_exporter_config_dir }}/config.yml"
     force: true

@@ -3,13 +3,15 @@
 
 Ansible role to install and configure [node-exporter](https://github.com/prometheus/node_exporter).
 
-[![GitHub Workflow Status](https://img.shields.io/github/workflow/status/bodsch/ansible-node-exporter/CI)][ci]
+[![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/bodsch/ansible-node-exporter/main.yml?branch=main)][ci]
 [![GitHub issues](https://img.shields.io/github/issues/bodsch/ansible-node-exporter)][issues]
 [![GitHub release (latest by date)](https://img.shields.io/github/v/release/bodsch/ansible-node-exporter)][releases]
+[![Ansible Quality Score](https://img.shields.io/ansible/quality/50067?label=role%20quality)][quality]
 
 [ci]: https://github.com/bodsch/ansible-node-exporter/actions
 [issues]: https://github.com/bodsch/ansible-node-exporter/issues?q=is%3Aopen+is%3Aissue
 [releases]: https://github.com/bodsch/ansible-node-exporter/releases
+[quality]: https://galaxy.ansible.com/bodsch/node_exporter
 
 
 If `latest` is set for `node_exporter_version`, the role tries to install the latest release version.  
@@ -62,13 +64,12 @@ node_exporter_textfile_dir: /var/lib/node_exporter
 
 node_exporter_direct_download: false
 
-node_exporter_logging:
-  level: warn
-
-node_exporter_web:
-  http_listen_address: "0.0.0.0"
-  http_listen_port: "9100"
-  telemetry_path: "/metrics"
+node_exporter_service:
+  log:
+    level: warn
+  web:
+    listen_address: "0.0.0.0:9100"
+    telemetry_path: "/metrics"
 
 node_exporter_tls_server: {}
 
@@ -195,3 +196,16 @@ see [molecule/default/group_vars/all/vars.yml](molecule/default/group_vars/all/v
 | `xfs`                               | Enable the xfs collector (default: *enabled*)             |
 | `zfs`                               | Enable the zfs collector (default: *enabled*)             |
 | `zoneinfo`                          | Enable the zoneinfo collector (default: *disabled*)       |
+
+
+---
+
+## Author and License
+
+- Bodo Schulz
+
+## License
+
+[Apache](LICENSE)
+
+**FREE SOFTWARE, HELL YEAH!**
