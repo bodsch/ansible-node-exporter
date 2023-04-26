@@ -1,17 +1,42 @@
 ---
 
-- name: define checksum
+- name: checksum
   become: false
   delegate_to: localhost
   run_once: true
   block:
     - name: get checksum list
-      ansible.builtin.set_fact:
-        __node_exporter_checksums: "{{ lookup('url', 'https://github.com/prometheus/node_exporter/releases/download/v' + node_exporter_version + '/sha256sums.txt', wantlist=True) | list }}"
+      bodsch.scm.github_checksum:
+        project: prometheus
+        repository: node_exporter
+        checksum_file: sha256sums.txt
+        user: "{{ lookup('env', 'GH_USER') | default(omit) }}"
+        password: "{{ lookup('env', 'GH_TOKEN') | default(omit) }}"
+        architecture: "{{ ansible_architecture }}"
+        system: "{{ ansible_facts.system }}"
+        version: "v{{ node_exporter_version }}"
+      register: _latest_checksum
 
-    - name: get checksum for {{ go_arch }} architecture
+    - name: define checksum for {{ go_arch }} architecture
       ansible.builtin.set_fact:
-        __node_exporter_checksums: "{{ __node_exporter_checksums | node_exporter_checksum('linux', go_arch) }}"
+        __node_exporter_checksums: "{{ _latest_checksum.checksum }}"
+      when:
+        - _latest_checksum.rc == 0
+        - _latest_checksum.checksum is defined
+        - _latest_checksum.checksum | string | length > 0
+
+# - name: define checksum
+#   become: false
+#   delegate_to: localhost
+#   run_once: true
+#   block:
+#     - name: get checksum list
+#       ansible.builtin.set_fact:
+#         __node_exporter_checksums: "{{ lookup('url', 'https://github.com/prometheus/node_exporter/releases/download/v' + node_exporter_version + '/sha256sums.txt', wantlist=True) | list }}"
+#
+#     - name: get checksum for {{ go_arch }} architecture
+#       ansible.builtin.set_fact:
+#         __node_exporter_checksums: "{{ __node_exporter_checksums | node_exporter_checksum('linux', go_arch) }}"
 
 - name: download node_exporter binary archive
   become: false

@@ -28,11 +28,12 @@
         owner: "{{ node_exporter_system_user }}"
         group: "{{ node_exporter_system_group }}"
 
-- name: create local facts
-  ansible.builtin.template:
-    src: ansible_facts.j2
-    dest: /etc/ansible/facts.d/node_exporter.fact
-    mode: 0755
+
+- name: create custom fact file
+  bodsch.core.facts:
+    name: node_exporter
+    facts:
+      version: "{{ node_exporter_version }}"
 
 - name: create link to binary
   ansible.builtin.file:
