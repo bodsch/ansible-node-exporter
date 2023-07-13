@@ -1,5 +1,17 @@
 ---
 
+- name: This repository will therefore no longer be actively maintained.
+  ansible.builtin.fail:
+    msg: |
+      Further development of this Ansible role has been moved to Collection bodsch.prometheus.
+      This repository will therefore no longer be actively maintained.
+  ignore_errors: true
+
+- name: wait 10 seconds to realise the message
+  delegate_to: localhost
+  ansible.builtin.wait_for:
+    timeout: 10
+
 - name: include OS specific configuration ({{ ansible_distribution }} ({{ ansible_os_family }}) {{ ansible_distribution_major_version }})
   ansible.builtin.include_vars: "{{ lookup('first_found', params) }}"
   vars:
